@@ -4,26 +4,36 @@
     <title>Responsive Snake Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
-        body {
+        body, html {
             background-color: #fff;
             margin: 0;
             padding: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
             color: #000;
-            text-align: center;
+            height: 100%;
+        }
+        #root {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
         }
         #gameContainer {
             position: relative;
             width: 100%;
             max-width: 800px;
-            margin: 0 auto;
+            /* Maintain a 4:3 aspect ratio */
+            height: 0;
+            padding-bottom: 75%; /* 600 / 800 = 0.75 */
             background-color: #fff;
             border: 2px solid #555;
-            height: 100vh;
-            max-height: 600px;
+            box-sizing: border-box;
         }
         #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             display: block;
@@ -37,15 +47,18 @@
             display: none;
             color: #000;
             white-space: pre-line;
-            z-index: 1;
+            text-align: center;
+            width: 90%;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
-        <div id="startMessage">Press Space or Tap to Start
+    <div id="root">
+        <div id="gameContainer">
+            <canvas id="gameCanvas"></canvas>
+            <div id="startMessage">Press Space or Tap to Start
 Use Arrow Keys or Swipe to Control the Snake</div>
+        </div>
     </div>
     <script>
         const gameContainer = document.getElementById('gameContainer');
@@ -66,8 +79,12 @@ Use Arrow Keys or Swipe to Control the Snake</div>
 
         function resizeGame() {
             // Set canvas dimensions to match the container
-            canvas.width = gameContainer.clientWidth;
-            canvas.height = gameContainer.clientHeight;
+            const containerStyle = getComputedStyle(gameContainer);
+            const containerWidth = gameContainer.clientWidth;
+            const containerHeight = gameContainer.clientHeight;
+
+            canvas.width = containerWidth;
+            canvas.height = containerHeight;
 
             // Calculate grid size based on canvas size
             gridSize = Math.floor(Math.min(canvas.width, canvas.height) / 30); // Adjust 30 to change grid density
