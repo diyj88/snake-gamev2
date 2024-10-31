@@ -57,7 +57,8 @@ Use Arrow Keys to Control the Snake</div>
         const startMessage = document.getElementById('startMessage');
 
         function resetGame() {
-            snake = [{ x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) }];
+            // Adjusted snake's starting position to avoid the obstacle
+            snake = [{ x: Math.floor(tileCountX / 4), y: Math.floor(tileCountY / 2) }];
             placeFood();
             randomDirection();
             if (gameInterval) clearInterval(gameInterval);
