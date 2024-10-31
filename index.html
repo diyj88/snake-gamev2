@@ -43,7 +43,7 @@
             font-family: 'CustomFont', sans-serif; /* Use custom font */
             text-transform: uppercase; /* Make text uppercase */
         }
-        /* New style for the Game Over text */
+        /* Style for the Game Over text */
         #gameOverMessage {
             position: absolute;
             top: 35%; /* Adjust this value to position above the smiley face */
@@ -62,7 +62,7 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="startMessage">Press Space to Start
 Use W, A, S, D Keys to Control the Snake</div>
-        <!-- New Game Over message -->
+        <!-- Game Over message -->
         <div id="gameOverMessage">Game Over!</div>
     </div>
     <script>
@@ -79,7 +79,7 @@ Use W, A, S, D Keys to Control the Snake</div>
         let gameRunning = false;
         let gameInterval;
         const startMessage = document.getElementById('startMessage');
-        const gameOverMessage = document.getElementById('gameOverMessage'); // Reference to the new Game Over message
+        const gameOverMessage = document.getElementById('gameOverMessage'); // Reference to the Game Over message
 
         function resetGame() {
             // Adjusted snake's starting position to avoid the obstacle
@@ -177,6 +177,11 @@ Use W, A, S, D Keys to Control the Snake</div>
             let obstacleX = (obstacle.x * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
             let obstacleY = (obstacle.y * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
             drawSmileyFace(obstacleX, obstacleY, obstacleSize, obstacleSize);
+
+            // Draw title if game over
+            if (!gameRunning) {
+                drawTitle();
+            }
         }
 
         function drawSmileyFace(x, y, width, height) {
@@ -210,9 +215,57 @@ Use W, A, S, D Keys to Control the Snake</div>
             ctx.stroke();
         }
 
+        function drawTitle() {
+            // Define the block positions for the word 'SNAKE'
+            const blockPositions = [
+                // S
+                [0,0],[1,0],[2,0],[3,0],[4,0],
+                [0,1],
+                [0,2],
+                [0,3],[1,3],[2,3],[3,3],[4,3],
+                [4,4],
+                [4,5],
+                [0,6],[1,6],[2,6],[3,6],[4,6],
+                // N
+                [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],
+                [7,1],[8,2],[9,3],[10,4],
+                [10,0],[10,1],[10,2],[10,3],[10,4],[10,5],[10,6],
+                // A
+                [12,6],[13,5],[14,4],[15,3],[16,4],[17,5],[18,6],
+                [13,3],[14,3],[15,3],[16,3],[17,3], // Crossbar
+                // K
+                [20,0],[20,1],[20,2],[20,3],[20,4],[20,5],[20,6],
+                [21,3],
+                [22,2],[23,1],[24,0],
+                [22,4],[23,5],[24,6],
+                // E
+                [26,0],[27,0],[28,0],[29,0],
+                [26,1],
+                [26,2],
+                [26,3],[27,3],[28,3],
+                [26,4],
+                [26,5],
+                [26,6],[27,6],[28,6],[29,6],
+            ];
+
+            // Starting position (in grid units)
+            const startX = Math.floor(tileCountX / 2) - 15; // Adjust as needed
+            const startY = Math.floor(tileCountY / 2) - 12; // Adjust as needed
+
+            ctx.fillStyle = '#fff'; // Set color to white (same as snake)
+
+            // Draw the blocks for the word
+            blockPositions.forEach(pos => {
+                const x = (startX + pos[0]) * gridSize;
+                const y = (startY + pos[1]) * gridSize;
+                ctx.fillRect(x, y, gridSize - 2, gridSize - 2);
+            });
+        }
+
         function gameOver() {
             gameRunning = false;
             clearInterval(gameInterval);
+            drawGame(); // Draw the final game state including the title
             gameOverMessage.style.display = 'block'; // Show Game Over message
             startMessage.innerText = 'Press Space to Restart\nUse W, A, S, D Keys to Control the Snake';
             startMessage.style.display = 'block';
