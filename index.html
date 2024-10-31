@@ -4,16 +4,16 @@
     <title>Snake Game</title>
     <style>
         body {
-            background-color: #222;
+            background-color: #fff;
             margin: 0;
             padding: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            color: #fff;
+            color: #000;
             text-align: center;
         }
         #gameCanvas {
-            background-color: #333;
+            background-color: #fff;
             display: block;
             margin: 20px auto;
             border: 2px solid #555;
@@ -25,12 +25,15 @@
             transform: translate(-50%, -50%);
             font-size: 24px;
             display: none;
+            color: #000;
+            white-space: pre-line;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="startMessage">Press Space to Start</div>
+    <div id="startMessage">Press Space to Start
+Use Arrow Keys to Control the Snake</div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -40,6 +43,7 @@
 
         let snake = [];
         let food = { x: 0, y: 0 };
+        let obstacle = { x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) };
         let velocity = { x: 0, y: 0 };
         let gameRunning = false;
         let gameInterval;
@@ -68,8 +72,11 @@
         function placeFood() {
             food.x = Math.floor(Math.random() * tileCountX);
             food.y = Math.floor(Math.random() * tileCountY);
-            // Ensure food doesn't appear on the snake
-            while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+            // Ensure food doesn't appear on the snake or obstacle
+            while (
+                snake.some(segment => segment.x === food.x && segment.y === food.y) ||
+                (food.x === obstacle.x && food.y === obstacle.y)
+            ) {
                 food.x = Math.floor(Math.random() * tileCountX);
                 food.y = Math.floor(Math.random() * tileCountY);
             }
@@ -91,6 +98,12 @@
                 return;
             }
 
+            // Obstacle collision
+            if (head.x === obstacle.x && head.y === obstacle.y) {
+                gameOver();
+                return;
+            }
+
             snake.unshift(head);
 
             // Food collision
@@ -105,11 +118,11 @@
 
         function drawGame() {
             // Clear canvas
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Draw snake
-            ctx.fillStyle = '#0f0';
+            ctx.fillStyle = '#000';
             snake.forEach(segment => {
                 ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
             });
@@ -117,12 +130,42 @@
             // Draw food
             ctx.fillStyle = '#f00';
             ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+
+            // Draw obstacle (yellow smiley face)
+            drawSmileyFace(obstacle.x * gridSize, obstacle.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function drawSmileyFace(x, y, width, height) {
+            let centerX = x + width / 2;
+            let centerY = y + height / 2;
+            let radius = (width < height ? width : height) / 2;
+
+            // Draw face
+            ctx.fillStyle = 'yellow';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw eyes
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
+            ctx.arc(centerX + radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw mouth
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius / 2, 0, Math.PI, false);
+            ctx.stroke();
         }
 
         function gameOver() {
             gameRunning = false;
             clearInterval(gameInterval);
-            startMessage.innerText = 'Game Over! Press Space to Restart';
+            startMessage.innerText = 'Game Over! Press Space to Restart\nUse Arrow Keys to Control the Snake';
             startMessage.style.display = 'block';
         }
 
@@ -131,27 +174,29 @@
                 resetGame();
             }
 
-            switch (e.key.toLowerCase()) {
-                case 'w':
-                    if (velocity.y !== 1) {
-                        velocity = { x: 0, y: -1 };
-                    }
-                    break;
-                case 'a':
-                    if (velocity.x !== 1) {
-                        velocity = { x: -1, y: 0 };
-                    }
-                    break;
-                case 's':
-                    if (velocity.y !== -1) {
-                        velocity = { x: 0, y: 1 };
-                    }
-                    break;
-                case 'd':
-                    if (velocity.x !== -1) {
-                        velocity = { x: 1, y: 0 };
-                    }
-                    break;
+            if (gameRunning) {
+                switch (e.code) {
+                    case 'ArrowUp':
+                        if (velocity.y !== 1) {
+                            velocity = { x: 0, y: -1 };
+                        }
+                        break;
+                    case 'ArrowDown':
+                        if (velocity.y !== -1) {
+                            velocity = { x: 0, y: 1 };
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        if (velocity.x !== 1) {
+                            velocity = { x: -1, y: 0 };
+                        }
+                        break;
+                    case 'ArrowRight':
+                        if (velocity.x !== -1) {
+                            velocity = { x: 1, y: 0 };
+                        }
+                        break;
+                }
             }
         });
 
