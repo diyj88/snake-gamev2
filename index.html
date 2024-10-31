@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Snake Game</title>
+    <title>Responsive Snake Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
         body {
             background-color: #fff;
@@ -14,13 +15,21 @@
         }
         #gameContainer {
             position: relative;
-            width: 800px;
-            height: 600px;
+            width: 100%;
+            max-width: 800px;
             margin: 20px auto;
-            border: 2px solid #555;
             background-color: #fff;
+            border: 2px solid #555;
+            /* Maintain a 4:3 aspect ratio */
+            height: 0;
+            padding-bottom: 75%; /* 600 / 800 = 0.75 */
         }
         #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: block;
         }
         #startMessage {
@@ -37,24 +46,52 @@
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="startMessage">Press Space to Start
-Use Arrow Keys to Control the Snake</div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="startMessage">Press Space or Tap to Start
+Use Arrow Keys or Swipe to Control the Snake</div>
     </div>
     <script>
+        const gameContainer = document.getElementById('gameContainer');
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const gridSize = 20;
-        const tileCountX = canvas.width / gridSize;
-        const tileCountY = canvas.height / gridSize;
+        let gridSize = 20;
+        let tileCountX;
+        let tileCountY;
 
         let snake = [];
         let food = { x: 0, y: 0 };
-        let obstacle = { x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) };
+        let obstacle = {};
         let velocity = { x: 0, y: 0 };
         let gameRunning = false;
         let gameInterval;
         const startMessage = document.getElementById('startMessage');
+
+        function resizeGame() {
+            // Adjust gameContainer height to maintain 4:3 aspect ratio
+            const containerWidth = gameContainer.clientWidth;
+            gameContainer.style.height = (containerWidth * 0.75) + 'px';
+
+            // Set canvas size to match gameContainer
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+
+            // Recalculate tile counts
+            tileCountX = Math.floor(canvas.width / gridSize);
+            tileCountY = Math.floor(canvas.height / gridSize);
+
+            // Reposition the obstacle
+            obstacle = { x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) };
+
+            // Redraw the game if it's running
+            if (gameRunning) {
+                drawGame();
+            } else {
+                drawGame(); // Draw the initial state
+            }
+        }
+
+        window.addEventListener('resize', resizeGame);
+        resizeGame(); // Initial call to set up the game size
 
         function resetGame() {
             // Adjusted snake's starting position to avoid the obstacle
@@ -182,12 +219,13 @@ Use Arrow Keys to Control the Snake</div>
         function gameOver() {
             gameRunning = false;
             clearInterval(gameInterval);
-            startMessage.innerText = 'Game Over! Press Space to Restart\nUse Arrow Keys to Control the Snake';
+            startMessage.innerText = 'Game Over! Press Space or Tap to Restart\nUse Arrow Keys or Swipe to Control the Snake';
             startMessage.style.display = 'block';
         }
 
+        // Keyboard controls
         document.addEventListener('keydown', function(e) {
-            if (!gameRunning && e.code === 'Space') {
+            if (!gameRunning && (e.code === 'Space' || e.code === 'Enter')) {
                 resetGame();
             }
 
@@ -216,6 +254,52 @@ Use Arrow Keys to Control the Snake</div>
                 }
             }
         });
+
+        // Start the game on tap (for mobile devices)
+        gameContainer.addEventListener('touchstart', function(e) {
+            if (!gameRunning) {
+                resetGame();
+            }
+        }, { passive: true });
+
+        // Swipe controls for mobile devices
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        gameContainer.addEventListener('touchstart', function(e) {
+            if (gameRunning) {
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            }
+        }, { passive: true });
+
+        gameContainer.addEventListener('touchmove', function(e) {
+            if (gameRunning) {
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    if (deltaX > 0 && velocity.x !== -1) {
+                        velocity = { x: 1, y: 0 }; // Swipe right
+                    } else if (deltaX < 0 && velocity.x !== 1) {
+                        velocity = { x: -1, y: 0 }; // Swipe left
+                    }
+                } else {
+                    // Vertical swipe
+                    if (deltaY > 0 && velocity.y !== -1) {
+                        velocity = { x: 0, y: 1 }; // Swipe down
+                    } else if (deltaY < 0 && velocity.y !== 1) {
+                        velocity = { x: 0, y: -1 }; // Swipe up
+                    }
+                }
+
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            }
+        }, { passive: true });
 
         // Initial display message
         startMessage.style.display = 'block';
