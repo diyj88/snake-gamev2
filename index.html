@@ -33,7 +33,7 @@
         }
         #startMessage {
             position: absolute;
-            bottom: 20px;
+            bottom: 100px; /* Adjusted to make room for controls */
             left: 50%;
             transform: translateX(-50%);
             font-size: 24px;
@@ -55,15 +55,57 @@
             text-transform: uppercase;
             display: none;
         }
+        /* Styles for on-screen controls */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            user-select: none;
+        }
+        .button {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            background-color: #888;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: #fff;
+            touch-action: manipulation;
+            font-family: Arial, sans-serif;
+        }
+        .button:active {
+            background-color: #555;
+        }
+        /* Hide controls initially */
+        .controls {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="startMessage">Press Space to Start
-Use W, A, S, D Keys to Control the Snake</div>
+        <div id="startMessage">Press Play to Start
+Use the Buttons to Control the Snake</div>
         <!-- Game Over message -->
         <div id="gameOverMessage">Game Over!</div>
+        <!-- On-screen control buttons -->
+        <div class="controls" id="controls">
+            <div class="button" id="upButton">▲</div>
+            <div style="display: flex; width: 100%; justify-content: space-between;">
+                <div class="button" id="leftButton">◀</div>
+                <div class="button" id="rightButton">▶</div>
+            </div>
+            <div class="button" id="downButton">▼</div>
+        </div>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -80,6 +122,7 @@ Use W, A, S, D Keys to Control the Snake</div>
         let gameInterval;
         const startMessage = document.getElementById('startMessage');
         const gameOverMessage = document.getElementById('gameOverMessage'); // Reference to the Game Over message
+        const controls = document.getElementById('controls'); // Reference to the controls container
 
         // New variable to track the game state
         let gameState = 'initial'; // Possible values: 'initial', 'running', 'gameover'
@@ -96,6 +139,7 @@ Use W, A, S, D Keys to Control the Snake</div>
             gameState = 'running';
             startMessage.style.display = 'none';
             gameOverMessage.style.display = 'none'; // Hide Game Over message when game starts
+            controls.style.display = 'flex'; // Show controls when game starts
         }
 
         function placeFood() {
@@ -274,8 +318,9 @@ Use W, A, S, D Keys to Control the Snake</div>
             // Instead, draw a simple game over screen
             drawGameOverScreen();
             gameOverMessage.style.display = 'block'; // Show Game Over message
-            startMessage.innerText = 'Press Space to Restart\nUse W, A, S, D Keys to Control the Snake';
+            startMessage.innerText = 'Press Play to Restart\nUse the Buttons to Control the Snake';
             startMessage.style.display = 'block';
+            controls.style.display = 'none'; // Hide controls when game is over
         }
 
         function drawGameOverScreen() {
@@ -298,41 +343,71 @@ Use W, A, S, D Keys to Control the Snake</div>
             // Do not draw the title in game over state
         }
 
-        document.addEventListener('keydown', function(e) {
-            if (!gameRunning && (e.code === 'Space' || e.code === 'Enter')) {
-                resetGame();
-            }
-
+        function changeDirection(newVelocity) {
             if (gameRunning) {
-                switch (e.code) {
-                    case 'KeyW':
-                        if (velocity.y !== 1) {
-                            velocity = { x: 0, y: -1 };
-                        }
-                        break;
-                    case 'KeyS':
-                        if (velocity.y !== -1) {
-                            velocity = { x: 0, y: 1 };
-                        }
-                        break;
-                    case 'KeyA':
-                        if (velocity.x !== 1) {
-                            velocity = { x: -1, y: 0 };
-                        }
-                        break;
-                    case 'KeyD':
-                        if (velocity.x !== -1) {
-                            velocity = { x: 1, y: 0 };
-                        }
-                        break;
+                if (newVelocity.x !== -velocity.x || newVelocity.y !== -velocity.y) {
+                    velocity = newVelocity;
                 }
             }
+        }
+
+        // Event listeners for on-screen buttons
+        document.getElementById('upButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: 0, y: -1 });
+        }, { passive: false });
+
+        document.getElementById('downButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: 0, y: 1 });
+        }, { passive: false });
+
+        document.getElementById('leftButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: -1, y: 0 });
+        }, { passive: false });
+
+        document.getElementById('rightButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: 1, y: 0 });
+        }, { passive: false });
+
+        // For desktop users, add click event listeners
+        document.getElementById('upButton').addEventListener('click', function() {
+            changeDirection({ x: 0, y: -1 });
         });
+
+        document.getElementById('downButton').addEventListener('click', function() {
+            changeDirection({ x: 0, y: 1 });
+        });
+
+        document.getElementById('leftButton').addEventListener('click', function() {
+            changeDirection({ x: -1, y: 0 });
+        });
+
+        document.getElementById('rightButton').addEventListener('click', function() {
+            changeDirection({ x: 1, y: 0 });
+        });
+
+        // Start the game on pressing play (we can simulate this with the first touch/click)
+        startMessage.addEventListener('click', function() {
+            if (!gameRunning) {
+                resetGame();
+            }
+        });
+
+        startMessage.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            if (!gameRunning) {
+                resetGame();
+            }
+        }, { passive: false });
 
         // Initial setup
         gameState = 'initial';
         startMessage.style.display = 'block';
         drawGame(); // Draw the initial game state with the title
+
     </script>
 </body>
 </html>
