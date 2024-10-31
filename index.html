@@ -81,7 +81,7 @@ Use W, A, S, D Keys to Control the Snake</div>
         const startMessage = document.getElementById('startMessage');
         const gameOverMessage = document.getElementById('gameOverMessage'); // Reference to the Game Over message
 
-        // New variable to track the initial state
+        // New variable to track the game state
         let gameState = 'initial'; // Possible values: 'initial', 'running', 'gameover'
 
         function resetGame() {
@@ -270,10 +270,32 @@ Use W, A, S, D Keys to Control the Snake</div>
             gameRunning = false;
             gameState = 'gameover';
             clearInterval(gameInterval);
-            drawGame(); // Draw the final game state
+            // Do not call drawGame() here to avoid drawing the title again
+            // Instead, draw a simple game over screen
+            drawGameOverScreen();
             gameOverMessage.style.display = 'block'; // Show Game Over message
             startMessage.innerText = 'Press Space to Restart\nUse W, A, S, D Keys to Control the Snake';
             startMessage.style.display = 'block';
+        }
+
+        function drawGameOverScreen() {
+            // Clear canvas
+            ctx.fillStyle = '#000'; // Set background to black
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the snake in its final position
+            ctx.fillStyle = '#fff'; // Set snake color to white
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+
+            // Draw the obstacle (smiley face)
+            let obstacleSize = 2 * (gridSize - 2);
+            let obstacleX = (obstacle.x * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
+            let obstacleY = (obstacle.y * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
+            drawSmileyFace(obstacleX, obstacleY, obstacleSize, obstacleSize);
+
+            // Do not draw the title in game over state
         }
 
         document.addEventListener('keydown', function(e) {
