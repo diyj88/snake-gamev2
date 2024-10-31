@@ -5,7 +5,7 @@
     <!-- Include the custom font -->
     <style>
         @font-face {
-            font-family: 'HelveticaNeueBold';
+            font-family: 'CustomFont';
             src: url('fonts/HelveticaNeue-Bold.woff') format('woff');
             font-weight: normal;
             font-style: normal;
@@ -15,10 +15,10 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: 'HelveticaNeueBold', sans-serif; /* Use custom font */
+            font-family: 'CustomFont', sans-serif; /* Use custom font */
             color: #fff; /* Set text color to white */
             text-align: center;
-            text-transform: uppercase; /* Make text uppercase */
+            text-transform: uppercase; /* Make all text uppercase */
         }
         #gameContainer {
             position: relative;
@@ -40,16 +40,30 @@
             display: none;
             color: #fff; /* Set text color to white */
             white-space: pre-line;
-            font-family: 'HelveticaNeueBold', sans-serif; /* Use custom font */
+            font-family: 'CustomFont', sans-serif; /* Use custom font */
             text-transform: uppercase; /* Make text uppercase */
+        }
+        /* New style for the Game Over text */
+        #gameOverMessage {
+            position: absolute;
+            top: 35%; /* Adjust this value to position above the smiley face */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #fff;
+            font-family: 'CustomFont', sans-serif;
+            text-transform: uppercase;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="startMessage">PRESS SPACE TO START
-USE W, A, S, D KEYS TO CONTROL THE SNAKE</div>
+        <div id="startMessage">Press Space to Start
+Use W, A, S, D Keys to Control the Snake</div>
+        <!-- New Game Over message -->
+        <div id="gameOverMessage">Game Over!</div>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -65,6 +79,7 @@ USE W, A, S, D KEYS TO CONTROL THE SNAKE</div>
         let gameRunning = false;
         let gameInterval;
         const startMessage = document.getElementById('startMessage');
+        const gameOverMessage = document.getElementById('gameOverMessage'); // Reference to the new Game Over message
 
         function resetGame() {
             // Adjusted snake's starting position to avoid the obstacle
@@ -76,6 +91,7 @@ USE W, A, S, D KEYS TO CONTROL THE SNAKE</div>
             gameInterval = setInterval(gameLoop, 100);
             gameRunning = true;
             startMessage.style.display = 'none';
+            gameOverMessage.style.display = 'none'; // Hide Game Over message when game starts
         }
 
         function placeFood() {
@@ -197,7 +213,8 @@ USE W, A, S, D KEYS TO CONTROL THE SNAKE</div>
         function gameOver() {
             gameRunning = false;
             clearInterval(gameInterval);
-            startMessage.innerText = 'GAME OVER! PRESS SPACE TO RESTART\nUSE W, A, S, D KEYS TO CONTROL THE SNAKE';
+            gameOverMessage.style.display = 'block'; // Show Game Over message
+            startMessage.innerText = 'Press Space to Restart\nUse W, A, S, D Keys to Control the Snake';
             startMessage.style.display = 'block';
         }
 
