@@ -2,23 +2,31 @@
 <html>
 <head>
     <title>Snake Game</title>
+    <!-- Include the custom font -->
     <style>
+        @font-face {
+            font-family: 'HelveticaNeueBold';
+            src: url('fonts/HelveticaNeue-Bold.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
         body {
-            background-color: #fff;
+            background-color: #000; /* Set background to black */
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
-            color: #000;
+            font-family: 'HelveticaNeueBold', sans-serif; /* Use custom font */
+            color: #fff; /* Set text color to white */
             text-align: center;
+            text-transform: uppercase; /* Make text uppercase */
         }
         #gameContainer {
             position: relative;
             width: 800px;
             height: 600px;
             margin: 20px auto;
-            border: 2px solid #555;
-            background-color: #fff;
+            border: 2px solid #fff; /* Set border (outline) to white */
+            background-color: #000; /* Set game background to black */
         }
         #gameCanvas {
             display: block;
@@ -30,16 +38,18 @@
             transform: translateX(-50%);
             font-size: 24px;
             display: none;
-            color: #000;
+            color: #fff; /* Set text color to white */
             white-space: pre-line;
+            font-family: 'HelveticaNeueBold', sans-serif; /* Use custom font */
+            text-transform: uppercase; /* Make text uppercase */
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="startMessage">Press Space to Start
-Use Arrow Keys to Control the Snake</div>
+        <div id="startMessage">PRESS SPACE TO START
+USE W, A, S, D KEYS TO CONTROL THE SNAKE</div>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -133,10 +143,11 @@ Use Arrow Keys to Control the Snake</div>
 
         function drawGame() {
             // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000'; // Set background to black
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // Draw snake
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff'; // Set snake color to white
             snake.forEach(segment => {
                 ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
             });
@@ -186,33 +197,33 @@ Use Arrow Keys to Control the Snake</div>
         function gameOver() {
             gameRunning = false;
             clearInterval(gameInterval);
-            startMessage.innerText = 'Game Over! Press Space to Restart\nUse Arrow Keys to Control the Snake';
+            startMessage.innerText = 'GAME OVER! PRESS SPACE TO RESTART\nUSE W, A, S, D KEYS TO CONTROL THE SNAKE';
             startMessage.style.display = 'block';
         }
 
         document.addEventListener('keydown', function(e) {
-            if (!gameRunning && e.code === 'Space') {
+            if (!gameRunning && (e.code === 'Space' || e.code === 'Enter')) {
                 resetGame();
             }
 
             if (gameRunning) {
                 switch (e.code) {
-                    case 'ArrowUp':
+                    case 'KeyW':
                         if (velocity.y !== 1) {
                             velocity = { x: 0, y: -1 };
                         }
                         break;
-                    case 'ArrowDown':
+                    case 'KeyS':
                         if (velocity.y !== -1) {
                             velocity = { x: 0, y: 1 };
                         }
                         break;
-                    case 'ArrowLeft':
+                    case 'KeyA':
                         if (velocity.x !== 1) {
                             velocity = { x: -1, y: 0 };
                         }
                         break;
-                    case 'ArrowRight':
+                    case 'KeyD':
                         if (velocity.x !== -1) {
                             velocity = { x: 1, y: 0 };
                         }
