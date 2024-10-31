@@ -60,21 +60,12 @@ Use Arrow Keys to Control the Snake</div>
             // Adjusted snake's starting position to avoid the obstacle
             snake = [{ x: Math.floor(tileCountX / 4), y: Math.floor(tileCountY / 2) }];
             placeFood();
-            randomDirection();
+            // Set initial direction to the right
+            velocity = { x: 1, y: 0 };
             if (gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, 100);
             gameRunning = true;
             startMessage.style.display = 'none';
-        }
-
-        function randomDirection() {
-            const directions = [
-                { x: 0, y: -1 }, // Up
-                { x: 0, y: 1 },  // Down
-                { x: -1, y: 0 }, // Left
-                { x: 1, y: 0 }   // Right
-            ];
-            velocity = directions[Math.floor(Math.random() * directions.length)];
         }
 
         function placeFood() {
@@ -92,7 +83,7 @@ Use Arrow Keys to Control the Snake</div>
 
         function isObstacle(x, y) {
             // Calculate obstacle coverage area due to scaling
-            let size = 3; // 300% scaling implies size covers 3 grid cells
+            let size = 2; // 200% scaling implies size covers 2 grid cells
             let startX = obstacle.x - Math.floor(size / 2);
             let startY = obstacle.y - Math.floor(size / 2);
 
@@ -155,7 +146,7 @@ Use Arrow Keys to Control the Snake</div>
             ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
 
             // Draw obstacle (scaled smiley face)
-            let obstacleSize = 3 * (gridSize - 2);
+            let obstacleSize = 2 * (gridSize - 2);
             let obstacleX = (obstacle.x * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
             let obstacleY = (obstacle.y * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
             drawSmileyFace(obstacleX, obstacleY, obstacleSize, obstacleSize);
@@ -178,56 +169,4 @@ Use Arrow Keys to Control the Snake</div>
             ctx.beginPath();
             ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
             ctx.arc(centerX + radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
-            ctx.closePath();
-            ctx.fill();
-
-            // Draw mouth
-            ctx.strokeStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius / 2, 0, Math.PI, false);
-            ctx.stroke();
-        }
-
-        function gameOver() {
-            gameRunning = false;
-            clearInterval(gameInterval);
-            startMessage.innerText = 'Game Over! Press Space to Restart\nUse Arrow Keys to Control the Snake';
-            startMessage.style.display = 'block';
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (!gameRunning && e.code === 'Space') {
-                resetGame();
-            }
-
-            if (gameRunning) {
-                switch (e.code) {
-                    case 'ArrowUp':
-                        if (velocity.y !== 1) {
-                            velocity = { x: 0, y: -1 };
-                        }
-                        break;
-                    case 'ArrowDown':
-                        if (velocity.y !== -1) {
-                            velocity = { x: 0, y: 1 };
-                        }
-                        break;
-                    case 'ArrowLeft':
-                        if (velocity.x !== 1) {
-                            velocity = { x: -1, y: 0 };
-                        }
-                        break;
-                    case 'ArrowRight':
-                        if (velocity.x !== -1) {
-                            velocity = { x: 1, y: 0 };
-                        }
-                        break;
-                }
-            }
-        });
-
-        // Initial display message
-        startMessage.style.display = 'block';
-    </script>
-</body>
-</html>
+            ctx.c
