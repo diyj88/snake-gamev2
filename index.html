@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Snake Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
         body {
             background-color: #fff;
@@ -14,58 +15,117 @@
         }
         #gameContainer {
             position: relative;
-            width: 800px;
-            height: 600px;
-            margin: 20px auto;
-            border: 2px solid #555;
+            width: 100%;
+            max-width: 800px;
+            height: 100vh;
+            max-height: 600px;
+            margin: 0 auto;
             background-color: #fff;
+            overflow: hidden;
         }
         #gameCanvas {
+            width: 100%;
+            height: 100%;
             display: block;
         }
         #startMessage {
             position: absolute;
-            bottom: 20px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 24px;
+            font-size: 20px;
             display: none;
             color: #000;
             white-space: pre-line;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        /* Styles for on-screen buttons */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            user-select: none;
+        }
+        .button {
+            width: 60px;
+            height: 60px;
+            margin: 5px;
+            background-color: #888;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            touch-action: manipulation;
+        }
+        .button:active {
+            background-color: #555;
+        }
+        /* Hide controls initially */
+        .controls {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <div id="startMessage">Press Space to Start
-Use Arrow Keys to Control the Snake</div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="startMessage">Tap to Start\nUse On-Screen Buttons to Control the Snake</div>
+        <!-- On-screen control buttons -->
+        <div class="controls" id="controls">
+            <div class="button" id="upButton">▲</div>
+            <div style="display: flex; width: 100%; justify-content: space-between;">
+                <div class="button" id="leftButton">◀</div>
+                <div class="button" id="rightButton">▶</div>
+            </div>
+            <div class="button" id="downButton">▼</div>
+        </div>
     </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const gridSize = 20;
-        const tileCountX = canvas.width / gridSize;
-        const tileCountY = canvas.height / gridSize;
+        let gridSize = 20;
+        let tileCountX;
+        let tileCountY;
 
         let snake = [];
         let food = { x: 0, y: 0 };
-        let obstacle = { x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) };
+        let obstacle = {};
         let velocity = { x: 0, y: 0 };
         let gameRunning = false;
         let gameInterval;
         const startMessage = document.getElementById('startMessage');
+        const controls = document.getElementById('controls');
+
+        // Adjust canvas size based on window size
+        function resizeCanvas() {
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            tileCountX = Math.floor(canvas.width / gridSize);
+            tileCountY = Math.floor(canvas.height / gridSize);
+            obstacle = { x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) };
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // Initial call
 
         function resetGame() {
-            // Adjusted snake's starting position to avoid the obstacle
             snake = [{ x: Math.floor(tileCountX / 4), y: Math.floor(tileCountY / 2) }];
             placeFood();
-            // Set initial direction to the right
             velocity = { x: 1, y: 0 };
             if (gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, 100);
             gameRunning = true;
             startMessage.style.display = 'none';
+            controls.style.display = 'flex';
         }
 
         function placeFood() {
@@ -82,8 +142,7 @@ Use Arrow Keys to Control the Snake</div>
         }
 
         function isObstacle(x, y) {
-            // Calculate obstacle coverage area due to scaling
-            let size = 2; // 200% scaling implies size covers 2 grid cells
+            let size = 2;
             let startX = obstacle.x - Math.floor(size / 2);
             let startY = obstacle.y - Math.floor(size / 2);
 
@@ -169,4 +228,86 @@ Use Arrow Keys to Control the Snake</div>
             ctx.beginPath();
             ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
             ctx.arc(centerX + radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
-            ctx.c
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw mouth
+            ctx.strokeStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius / 2, 0, Math.PI, false);
+            ctx.stroke();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            startMessage.innerText = 'Game Over! Tap to Restart\nUse On-Screen Buttons to Control the Snake';
+            startMessage.style.display = 'block';
+            controls.style.display = 'none';
+        }
+
+        function changeDirection(newVelocity) {
+            if (gameRunning) {
+                if (newVelocity.x !== -velocity.x || newVelocity.y !== -velocity.y) {
+                    velocity = newVelocity;
+                }
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (!gameRunning && (e.code === 'Space' || e.code === 'Enter')) {
+                resetGame();
+            }
+
+            if (gameRunning) {
+                switch (e.code) {
+                    case 'ArrowUp':
+                        changeDirection({ x: 0, y: -1 });
+                        break;
+                    case 'ArrowDown':
+                        changeDirection({ x: 0, y: 1 });
+                        break;
+                    case 'ArrowLeft':
+                        changeDirection({ x: -1, y: 0 });
+                        break;
+                    case 'ArrowRight':
+                        changeDirection({ x: 1, y: 0 });
+                        break;
+                }
+            }
+        });
+
+        // Start the game on tap
+        const gameContainer = document.getElementById('gameContainer');
+        gameContainer.addEventListener('touchstart', function(e) {
+            if (!gameRunning) {
+                resetGame();
+            }
+        }, { passive: false });
+
+        // On-screen button event listeners
+        document.getElementById('upButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: 0, y: -1 });
+        }, { passive: false });
+
+        document.getElementById('downButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: 0, y: 1 });
+        }, { passive: false });
+
+        document.getElementById('leftButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: -1, y: 0 });
+        }, { passive: false });
+
+        document.getElementById('rightButton').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            changeDirection({ x: 1, y: 0 });
+        }, { passive: false });
+
+        // Initial display message
+        startMessage.style.display = 'block';
+    </script>
+</body>
+</html>
