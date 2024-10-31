@@ -12,17 +12,22 @@
             color: #000;
             text-align: center;
         }
-        #gameCanvas {
-            background-color: #fff;
-            display: block;
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
             margin: 20px auto;
             border: 2px solid #555;
+            background-color: #fff;
+        }
+        #gameCanvas {
+            display: block;
         }
         #startMessage {
             position: absolute;
-            top: 50%;
+            bottom: 20px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             font-size: 24px;
             display: none;
             color: #000;
@@ -31,9 +36,11 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="startMessage">Press Space to Start
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="startMessage">Press Space to Start
 Use Arrow Keys to Control the Snake</div>
+    </div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -75,11 +82,27 @@ Use Arrow Keys to Control the Snake</div>
             // Ensure food doesn't appear on the snake or obstacle
             while (
                 snake.some(segment => segment.x === food.x && segment.y === food.y) ||
-                (food.x === obstacle.x && food.y === obstacle.y)
+                isObstacle(food.x, food.y)
             ) {
                 food.x = Math.floor(Math.random() * tileCountX);
                 food.y = Math.floor(Math.random() * tileCountY);
             }
+        }
+
+        function isObstacle(x, y) {
+            // Calculate obstacle coverage area due to scaling
+            let size = 3; // 300% scaling implies size covers 3 grid cells
+            let startX = obstacle.x - Math.floor(size / 2);
+            let startY = obstacle.y - Math.floor(size / 2);
+
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (x === startX + i && y === startY + j) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         function gameLoop() {
@@ -99,7 +122,7 @@ Use Arrow Keys to Control the Snake</div>
             }
 
             // Obstacle collision
-            if (head.x === obstacle.x && head.y === obstacle.y) {
+            if (isObstacle(head.x, head.y)) {
                 gameOver();
                 return;
             }
@@ -118,8 +141,7 @@ Use Arrow Keys to Control the Snake</div>
 
         function drawGame() {
             // Clear canvas
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw snake
             ctx.fillStyle = '#000';
@@ -131,8 +153,11 @@ Use Arrow Keys to Control the Snake</div>
             ctx.fillStyle = '#f00';
             ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
 
-            // Draw obstacle (yellow smiley face)
-            drawSmileyFace(obstacle.x * gridSize, obstacle.y * gridSize, gridSize - 2, gridSize - 2);
+            // Draw obstacle (scaled smiley face)
+            let obstacleSize = 3 * (gridSize - 2);
+            let obstacleX = (obstacle.x * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
+            let obstacleY = (obstacle.y * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
+            drawSmileyFace(obstacleX, obstacleY, obstacleSize, obstacleSize);
         }
 
         function drawSmileyFace(x, y, width, height) {
