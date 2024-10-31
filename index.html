@@ -81,6 +81,9 @@ Use W, A, S, D Keys to Control the Snake</div>
         const startMessage = document.getElementById('startMessage');
         const gameOverMessage = document.getElementById('gameOverMessage'); // Reference to the Game Over message
 
+        // New variable to track the initial state
+        let gameState = 'initial'; // Possible values: 'initial', 'running', 'gameover'
+
         function resetGame() {
             // Adjusted snake's starting position to avoid the obstacle
             snake = [{ x: Math.floor(tileCountX / 4), y: Math.floor(tileCountY / 2) }];
@@ -90,6 +93,7 @@ Use W, A, S, D Keys to Control the Snake</div>
             if (gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, 100);
             gameRunning = true;
+            gameState = 'running';
             startMessage.style.display = 'none';
             gameOverMessage.style.display = 'none'; // Hide Game Over message when game starts
         }
@@ -178,8 +182,8 @@ Use W, A, S, D Keys to Control the Snake</div>
             let obstacleY = (obstacle.y * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
             drawSmileyFace(obstacleX, obstacleY, obstacleSize, obstacleSize);
 
-            // Draw title if game over
-            if (!gameRunning) {
+            // Draw title if in initial state
+            if (gameState === 'initial') {
                 drawTitle();
             }
         }
@@ -264,8 +268,9 @@ Use W, A, S, D Keys to Control the Snake</div>
 
         function gameOver() {
             gameRunning = false;
+            gameState = 'gameover';
             clearInterval(gameInterval);
-            drawGame(); // Draw the final game state including the title
+            drawGame(); // Draw the final game state
             gameOverMessage.style.display = 'block'; // Show Game Over message
             startMessage.innerText = 'Press Space to Restart\nUse W, A, S, D Keys to Control the Snake';
             startMessage.style.display = 'block';
@@ -302,8 +307,10 @@ Use W, A, S, D Keys to Control the Snake</div>
             }
         });
 
-        // Initial display message
+        // Initial setup
+        gameState = 'initial';
         startMessage.style.display = 'block';
+        drawGame(); // Draw the initial game state with the title
     </script>
 </body>
 </html>
