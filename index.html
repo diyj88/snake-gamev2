@@ -4,20 +4,17 @@
     <title>Responsive Snake Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <style>
-        body, html {
+        html, body {
             background-color: #fff;
             margin: 0;
             padding: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
             color: #000;
-            height: 100%;
-        }
-        #root {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
         }
         #gameContainer {
             position: relative;
@@ -29,6 +26,7 @@
             background-color: #fff;
             border: 2px solid #555;
             box-sizing: border-box;
+            margin: 20px 0; /* Add margin to create space at the top and bottom */
         }
         #gameCanvas {
             position: absolute;
@@ -53,12 +51,10 @@
     </style>
 </head>
 <body>
-    <div id="root">
-        <div id="gameContainer">
-            <canvas id="gameCanvas"></canvas>
-            <div id="startMessage">Press Space or Tap to Start
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="startMessage">Press Space or Tap to Start
 Use Arrow Keys or Swipe to Control the Snake</div>
-        </div>
     </div>
     <script>
         const gameContainer = document.getElementById('gameContainer');
@@ -79,7 +75,6 @@ Use Arrow Keys or Swipe to Control the Snake</div>
 
         function resizeGame() {
             // Set canvas dimensions to match the container
-            const containerStyle = getComputedStyle(gameContainer);
             const containerWidth = gameContainer.clientWidth;
             const containerHeight = gameContainer.clientHeight;
 
