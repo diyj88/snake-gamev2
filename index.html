@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        body {
+            background-color: #222;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            text-align: center;
+        }
+        #gameCanvas {
+            background-color: #333;
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #555;
+        }
+        #startMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="startMessage">Press Space to Start</div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 20;
+        const tileCountX = canvas.width / gridSize;
+        const tileCountY = canvas.height / gridSize;
+
+        let snake = [];
+        let food = { x: 0, y: 0 };
+        let velocity = { x: 0, y: 0 };
+        let gameRunning = false;
+        let gameInterval;
+        const startMessage = document.getElementById('startMessage');
+
+        function resetGame() {
+            snake = [{ x: Math.floor(tileCountX / 2), y: Math.floor(tileCountY / 2) }];
+            placeFood();
+            randomDirection();
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 100);
+            gameRunning = true;
+            startMessage.style.display = 'none';
+        }
+
+        function randomDirection() {
+            const directions = [
+                { x: 0, y: -1 }, // Up
+                { x: 0, y: 1 },  // Down
+                { x: -1, y: 0 }, // Left
+                { x: 1, y: 0 }   // Right
+            ];
+            velocity = directions[Math.floor(Math.random() * directions.length)];
+        }
+
+        function placeFood() {
+            food.x = Math.floor(Math.random() * tileCountX);
+            food.y = Math.floor(Math.random() * tileCountY);
+            // Ensure food doesn't appear on the snake
+            while (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
+                food.x = Math.floor(Math.random() * tileCountX);
+                food.y = Math.floor(Math.random() * tileCountY);
+            }
+        }
+
+        function gameLoop() {
+            // Move snake
+            const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
+
+            // Wall collision
+            if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
+                gameOver();
+                return;
+            }
+
+            // Self collision
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameOver();
+                return;
+            }
+
+            snake.unshift(head);
+
+            // Food collision
+            if (head.x === food.x && head.y === food.y) {
+                placeFood();
+            } else {
+                snake.pop();
+            }
+
+            drawGame();
+        }
+
+        function drawGame() {
+            // Clear canvas
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw snake
+            ctx.fillStyle = '#0f0';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+
+            // Draw food
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            startMessage.innerText = 'Game Over! Press Space to Restart';
+            startMessage.style.display = 'block';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (!gameRunning && e.code === 'Space') {
+                resetGame();
+            }
+
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    if (velocity.y !== 1) {
+                        velocity = { x: 0, y: -1 };
+                    }
+                    break;
+                case 'a':
+                    if (velocity.x !== 1) {
+                        velocity = { x: -1, y: 0 };
+                    }
+                    break;
+                case 's':
+                    if (velocity.y !== -1) {
+                        velocity = { x: 0, y: 1 };
+                    }
+                    break;
+                case 'd':
+                    if (velocity.x !== -1) {
+                        velocity = { x: 1, y: 0 };
+                    }
+                    break;
+            }
+        });
+
+        // Initial display message
+        startMessage.style.display = 'block';
+    </script>
+</body>
+</html>
