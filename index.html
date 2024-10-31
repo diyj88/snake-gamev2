@@ -82,8 +82,8 @@ Use Arrow Keys to Control the Snake</div>
         }
 
         function isObstacle(x, y) {
-            // Calculate obstacle coverage area due to scaling
-            let size = 2; // 200% scaling implies size covers 2 grid cells
+            // Obstacle covers a 2x2 grid area
+            let size = 2;
             let startX = obstacle.x - Math.floor(size / 2);
             let startY = obstacle.y - Math.floor(size / 2);
 
@@ -145,7 +145,7 @@ Use Arrow Keys to Control the Snake</div>
             ctx.fillStyle = '#f00';
             ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
 
-            // Draw obstacle (scaled smiley face)
+            // Draw obstacle (smiley face)
             let obstacleSize = 2 * (gridSize - 2);
             let obstacleX = (obstacle.x * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
             let obstacleY = (obstacle.y * gridSize) - ((obstacleSize - (gridSize - 2)) / 2);
@@ -155,7 +155,7 @@ Use Arrow Keys to Control the Snake</div>
         function drawSmileyFace(x, y, width, height) {
             let centerX = x + width / 2;
             let centerY = y + height / 2;
-            let radius = (width < height ? width : height) / 2;
+            let radius = Math.min(width, height) / 2;
 
             // Draw face
             ctx.fillStyle = 'yellow';
@@ -166,14 +166,18 @@ Use Arrow Keys to Control the Snake</div>
 
             // Draw eyes
             ctx.fillStyle = 'black';
+            let eyeRadius = radius / 6;
+            let eyeOffsetX = radius / 3;
+            let eyeOffsetY = radius / 3;
             ctx.beginPath();
-            ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
-            ctx.arc(centerX + radius / 3, centerY - radius / 3, radius / 6, 0, Math.PI * 2, true);
+            ctx.arc(centerX - eyeOffsetX, centerY - eyeOffsetY, eyeRadius, 0, Math.PI * 2, true);
+            ctx.arc(centerX + eyeOffsetX, centerY - eyeOffsetY, eyeRadius, 0, Math.PI * 2, true);
             ctx.closePath();
             ctx.fill();
 
             // Draw mouth
             ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius / 2, 0, Math.PI, false);
             ctx.stroke();
